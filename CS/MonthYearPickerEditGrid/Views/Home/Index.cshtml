@@ -1,0 +1,43 @@
+@model string
+@using (Html.BeginForm("Index", "Home", FormMethod.Post, new { id = "myform" }))
+{
+    <script type="text/javascript">
+        function DateChanged(s, e) {
+            var startDate = new Date(s.GetValue());
+            var date1 = startDate.toLocaleDateString();
+            var changedDate = null;
+            switch (combo.GetValue()) {
+                case "Months":
+                    changedDate = startDate.setMonth(startDate.getMonth() + 1);
+                    break;
+                case "Years":
+                    changedDate = startDate.setMonth(startDate.getMonth() + 12);
+                    break;
+            }
+            var date2 = new Date(changedDate).toLocaleDateString();
+            document.getElementById("dateText").innerText = s.GetValue().toLocaleDateString();
+            GridView.AutoFilterByColumn("OrderDate", date1 + "|" + date2);
+        }
+        function OnSelectedIndexChanged(s, e) {
+            $('#myform').submit();
+        }
+    </script>
+    @Html.DevExpress().DateEdit(deSettings =>
+    {
+        deSettings.Name = "TestDateEdit";
+        deSettings.Properties.ClientSideEvents.Init = "DateChanged";
+        deSettings.Properties.ClientSideEvents.DateChanged = "DateChanged";
+        deSettings.Properties.PickerType = (DatePickerType)Enum.Parse(typeof(DatePickerType), Model);
+        deSettings.Properties.MinDate = new DateTime(2018, 9, 1);
+        deSettings.Properties.MaxDate = (new DateTime(2018, 9, 1)).AddDays(1000);
+    }).Bind(new DateTime(2018, 9, 1)).GetHtml()
+    <span style="color:red">Value of DateEdit is </span><span style="color:red" id="dateText"></span>
+    @Html.DevExpress().ComboBox(cbSettings =>
+    {
+        cbSettings.Name = "combo";
+        cbSettings.Properties.Items.Add("Month range", "Months");
+        cbSettings.Properties.Items.Add("Year range", "Years");
+        cbSettings.Properties.ClientSideEvents.SelectedIndexChanged = "OnSelectedIndexChanged";
+    }).Bind(Model).GetHtml()
+    @Html.Action("GridViewPartial")
+}
